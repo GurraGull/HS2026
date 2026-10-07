@@ -13,8 +13,8 @@
   html,body{height:100%;background:#06101f;overflow:hidden;font-family:"Cormorant Garamond",Georgia,serif;color:#fff}
 
   .stage{position:fixed;inset:0;display:grid;place-items:center;background:#06101f}
-  .backdrop{position:absolute;inset:-10%;background:url(assets/stadshuset-clean.webp) center/cover;filter:blur(40px) brightness(.3);transform:scale(1.1)}
-  .frame{position:relative;width:min(100vw,100vh);height:min(100vw,100vh);overflow:hidden;isolation:isolate}
+  .backdrop{position:absolute;inset:-10%;background:url(assets/stadshuset-wide.webp) center/cover;filter:blur(40px) brightness(.3);transform:scale(1.1)}
+  .frame{position:relative;width:min(100vw,177.78vh);aspect-ratio:16/9;max-width:100%;overflow:hidden;isolation:isolate}
 
   /* ---- background plate: dusk to dawn, slow push ---- */
   .plate,.sky,.water{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -33,7 +33,7 @@
   canvas{position:absolute;inset:0;width:100%;height:100%;mix-blend-mode:screen}
 
   /* ---- the mark: arc sweeps in clockwise, letters settle in afterwards ---- */
-  .mark{position:absolute;left:22%;top:15.5%;width:56%;aspect-ratio:707/591;filter:drop-shadow(0 6px 30px rgba(4,12,30,.55))}
+  .mark{position:absolute;left:34.25%;top:15.5%;width:31.5%;aspect-ratio:707/591;filter:drop-shadow(0 6px 30px rgba(4,12,30,.55))}
   .mark img{position:absolute;inset:0;width:100%;height:100%}
   .arc{
     --sweep:0deg;
@@ -73,10 +73,10 @@
   .copy{position:absolute;left:0;right:0;bottom:4.5%;text-align:center;pointer-events:none}
   .copy>*{opacity:0;animation:rise var(--loop) ease-out infinite;animation-delay:var(--d,0s)}
   @keyframes rise{0%,62%{opacity:0;transform:translateY(12px)}70%{opacity:1;transform:none}90%{opacity:1;transform:none}96%,100%{opacity:0}}
-  .copy h1{font-weight:300;font-size:clamp(1.6rem,5.2vmin,3.6rem);line-height:1.05;letter-spacing:.06em;text-shadow:0 2px 24px rgba(0,0,0,.55)}
+  .copy h1{font-weight:300;font-size:clamp(1.4rem,3.4vw,3.6rem);line-height:1.05;letter-spacing:.06em;text-shadow:0 2px 24px rgba(0,0,0,.55)}
   .copy h1 b{font-weight:500}
-  .copy .rule{width:5.5vmin;height:1px;margin:1.6vmin auto;background:rgba(255,255,255,.75);--d:.35s}
-  .copy .meta{font-weight:400;font-size:clamp(.85rem,2.2vmin,1.35rem);letter-spacing:.3em;text-transform:uppercase;--d:.6s;text-shadow:0 1px 14px rgba(0,0,0,.6)}
+  .copy .rule{width:3.5vw;height:1px;margin:1.2vw auto;background:rgba(255,255,255,.75);--d:.35s}
+  .copy .meta{font-weight:400;font-size:clamp(.75rem,1.4vw,1.35rem);letter-spacing:.3em;text-transform:uppercase;--d:.6s;text-shadow:0 1px 14px rgba(0,0,0,.6)}
   .copy .meta i{font-style:normal;opacity:.6;margin:0 .5em}
   .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,16,31,.15) 0%,transparent 30%,transparent 60%,rgba(6,16,31,.82) 100%);pointer-events:none}
 
@@ -88,9 +88,9 @@
 <div class="stage">
   <div class="backdrop"></div>
   <div class="frame" id="frame">
-    <img class="plate" src="assets/stadshuset-clean.webp" alt="Stockholms stadshus i gryningen">
-    <img class="sky"   src="assets/stadshuset-clean.webp" alt="" aria-hidden="true">
-    <img class="water" src="assets/stadshuset-clean.webp" alt="" aria-hidden="true">
+    <img class="plate" src="assets/stadshuset-wide.webp" alt="Stockholms stadshus i gryningen">
+    <img class="sky"   src="assets/stadshuset-wide.webp" alt="" aria-hidden="true">
+    <img class="water" src="assets/stadshuset-wide.webp" alt="" aria-hidden="true">
     <canvas id="sun"></canvas>
     <div class="shade"></div>
 
@@ -127,7 +127,7 @@
     sun.width = W*dpr; sun.height = H*dpr; sc.setTransform(dpr,0,0,dpr,0,0); }
   addEventListener('resize', resize); resize();
 
-  const SUN = {x:0.845, y:0.79};
+  const SUN = {x:0.694, y:0.79};
   const ease = t => t<0?0:t>1?1:t*t*(3-2*t);
   let paused = false, t0 = performance.now();
 
@@ -139,7 +139,7 @@
     sc.clearRect(0,0,W,H);
     if (light > 0){
       const sx = SUN.x*W, sy = SUN.y*H, breathe = 1 + 0.03*Math.sin(el/1800);
-      const g = sc.createRadialGradient(sx,sy,0,sx,sy,W*0.6*breathe);
+      const g = sc.createRadialGradient(sx,sy,0,sx,sy,W*0.4*breathe);
       g.addColorStop(0,`rgba(255,238,200,${0.65*light})`);
       g.addColorStop(0.1,`rgba(255,205,130,${0.28*light})`);
       g.addColorStop(0.4,`rgba(255,160,80,${0.08*light})`);
@@ -149,7 +149,7 @@
       const wg = sc.createLinearGradient(0,H*0.86,0,H);
       wg.addColorStop(0,`rgba(255,215,150,${0.3*light})`); wg.addColorStop(1,'rgba(255,215,150,0)');
       sc.fillStyle = wg; sc.beginPath();
-      sc.moveTo(sx-W*0.02,H*0.86); sc.lineTo(sx+W*0.02,H*0.86); sc.lineTo(sx+W*0.1,H); sc.lineTo(sx-W*0.1,H); sc.closePath(); sc.fill();
+      sc.moveTo(sx-W*0.012,H*0.86); sc.lineTo(sx+W*0.012,H*0.86); sc.lineTo(sx+W*0.06,H); sc.lineTo(sx-W*0.06,H); sc.closePath(); sc.fill();
     }
     turb.setAttribute('baseFrequency', `${(0.012+0.002*Math.sin(el/700)).toFixed(4)} ${(0.08+0.01*Math.cos(el/900)).toFixed(4)}`);
     turb.setAttribute('seed', Math.floor(el/180) % 50);
