@@ -157,12 +157,13 @@
 
   const SUN = {x:0.845, y:0.79};
   const ease = t => t<0?0:t>1?1:t*t*(3-2*t);
-  let paused = false, t0 = performance.now();
+  let paused = false, t0 = performance.now(), fixed = null;
+  // external clock for frame-exact rendering (video export): sets JS time and every CSS animation
+  window.__setTime = ms => { fixed = ms; document.getAnimations().forEach(a => { a.pause(); a.currentTime = ms; }); render(performance.now()); };
 
-  function tick(now){
-    requestAnimationFrame(tick);
-    if (paused) return;
-    const el = now - t0, s = el/1000, ph = (el % LOOP) / LOOP;
+  function tick(now){ requestAnimationFrame(tick); if (paused || fixed !== null) return; render(now); }
+  function render(now){
+    const el = fixed ?? (now - t0), s = el/1000, ph = (el % LOOP) / LOOP;
 
     // camera: a Lissajous drift the eye reads as a slow dolly, plus the pointer
     cam.x += (target.x - cam.x) * 0.04; cam.y += (target.y - cam.y) * 0.04;
