@@ -5,89 +5,82 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>IVA Högtidssammankomst 2026</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Michroma&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --loop: 18s;
-    --cream: #f1e9d6;
-    --steel: #9fb6d6;
-    --ink: #07101f;
-  }
+  @property --sweep { syntax:'<angle>'; inherits:false; initial-value:0deg; }
+  :root{ --loop:16s; --ink:#0b1b3a; }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;background:var(--ink);overflow:hidden;font-family:"Space Mono",monospace;color:var(--cream)}
+  html,body{height:100%;background:#06101f;overflow:hidden;font-family:"Cormorant Garamond",Georgia,serif;color:#fff}
 
-  .stage{position:fixed;inset:0;display:grid;place-items:center;background:var(--ink)}
-  .backdrop{position:absolute;inset:-10%;background:url(assets/iva-stadshuset.webp) center/cover;filter:blur(36px) brightness(.22) saturate(.6);transform:scale(1.1)}
+  .stage{position:fixed;inset:0;display:grid;place-items:center;background:#06101f}
+  .backdrop{position:absolute;inset:-10%;background:url(assets/stadshuset-clean.webp) center/cover;filter:blur(40px) brightness(.3);transform:scale(1.1)}
   .frame{position:relative;width:min(100vw,100vh);height:min(100vw,100vh);overflow:hidden;isolation:isolate}
 
-  /* ---- base plate: print-grade, cold, slow architectural push-in ---- */
-  .plate{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
-         animation:grade var(--loop) ease-in-out infinite, push var(--loop) ease-in-out infinite}
+  /* ---- background plate: dusk to dawn, slow push ---- */
+  .plate,.sky,.water{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .plate{animation:grade var(--loop) ease-in-out infinite, push var(--loop) ease-in-out infinite}
+  .water{clip-path:inset(85% 0 0 0);filter:url(#ripple);animation:grade var(--loop) ease-in-out infinite, push var(--loop) ease-in-out infinite}
+  .sky{clip-path:inset(0 0 26% 0);mix-blend-mode:screen;opacity:.3;animation:drift 80s linear infinite alternate, grade var(--loop) ease-in-out infinite}
   @keyframes grade{
-    0%   {filter:brightness(.34) saturate(.45) contrast(1.2) sepia(.08)}
-    20%  {filter:brightness(.5)  saturate(.6)  contrast(1.15) sepia(.06)}
-    48%  {filter:brightness(.98) saturate(.88) contrast(1.06) sepia(.04)}
-    86%  {filter:brightness(.98) saturate(.88) contrast(1.06) sepia(.04)}
-    100% {filter:brightness(.34) saturate(.45) contrast(1.2) sepia(.08)}
+    0%  {filter:brightness(.3) saturate(.6) contrast(1.12)}
+    22% {filter:brightness(.5) saturate(.75) contrast(1.08)}
+    55% {filter:brightness(1)  saturate(1)   contrast(1)}
+    86% {filter:brightness(1)  saturate(1)   contrast(1)}
+    100%{filter:brightness(.3) saturate(.6) contrast(1.12)}
   }
-  @keyframes push{0%{transform:scale(1.07)}50%{transform:scale(1)}100%{transform:scale(1.07)}}
+  @keyframes push{0%{transform:scale(1.06)}50%{transform:scale(1)}100%{transform:scale(1.06)}}
+  @keyframes drift{from{transform:scale(1.1) translateX(-1.5%)}to{transform:scale(1.1) translateX(1.5%)}}
+  canvas{position:absolute;inset:0;width:100%;height:100%;mix-blend-mode:screen}
 
-  .water{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;clip-path:inset(85% 0 0 0);filter:url(#ripple);
-         animation:grade var(--loop) ease-in-out infinite, push var(--loop) ease-in-out infinite}
-  .sky{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;clip-path:inset(0 0 24% 0);mix-blend-mode:screen;opacity:.28;
-       animation:drift 70s linear infinite alternate, grade var(--loop) ease-in-out infinite}
-  @keyframes drift{from{transform:scale(1.1) translateX(-2%)}to{transform:scale(1.1) translateX(2%)}}
-
-  canvas{position:absolute;inset:0;width:100%;height:100%}
-  #sun{mix-blend-mode:screen}
-  #grain{mix-blend-mode:overlay;opacity:.55;pointer-events:none}
-
-  /* ---- drafting overlay: construction geometry that draws itself ---- */
-  svg.draft{position:absolute;inset:0;width:100%;height:100%;overflow:visible;font-family:"Space Mono",monospace}
-  .draft *{vector-effect:non-scaling-stroke}
-  .draft .c{fill:none;stroke:var(--cream);stroke-width:1.2;opacity:.75;filter:drop-shadow(0 0 2px rgba(4,10,22,.9))}
-  .draft .dash{stroke-dasharray:6 8}
-  .draft .lbl{fill:var(--cream);font-size:15px;letter-spacing:.18em;opacity:.9;paint-order:stroke;stroke:rgba(4,10,22,.85);stroke-width:4px}
-  .draft .draw{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:draw var(--loop) linear infinite}
-  @keyframes draw{
-    0%{stroke-dashoffset:var(--len);opacity:0}
-    4%{opacity:.7}
-    22%{stroke-dashoffset:0;opacity:.7}
-    80%{stroke-dashoffset:0;opacity:.7}
-    92%,100%{stroke-dashoffset:0;opacity:0}
+  /* ---- the mark: arc sweeps in clockwise, letters settle in afterwards ---- */
+  .mark{position:absolute;left:22%;top:15.5%;width:56%;aspect-ratio:707/591;filter:drop-shadow(0 6px 30px rgba(4,12,30,.55))}
+  .mark img{position:absolute;inset:0;width:100%;height:100%}
+  .arc{
+    --sweep:0deg;
+    -webkit-mask:conic-gradient(from 280deg at 55.2% 51.1%, #000 0 var(--sweep), transparent var(--sweep));
+            mask:conic-gradient(from 280deg at 55.2% 51.1%, #000 0 var(--sweep), transparent var(--sweep));
+    animation:sweep var(--loop) cubic-bezier(.55,0,.12,1) infinite}
+  @keyframes sweep{
+    0%,18%{--sweep:0deg;opacity:0}
+    19%{opacity:1}
+    46%{--sweep:216deg;opacity:1}
+    88%{--sweep:216deg;opacity:1}
+    96%,100%{--sweep:216deg;opacity:0}
   }
-  .draft .fade{opacity:0;animation:fade var(--loop) linear infinite}
-  @keyframes fade{0%,16%{opacity:0}22%{opacity:1}80%{opacity:1}92%,100%{opacity:0}}
-
-  /* the artwork's own arc, re-drawn as a hard cream stroke */
-  .draft .arc{fill:none;stroke:var(--cream);stroke-width:3;stroke-linecap:butt;
-    stroke-dasharray:1300;stroke-dashoffset:1300;animation:arc var(--loop) cubic-bezier(.5,0,.15,1) infinite}
-  @keyframes arc{
-    0%,20%{stroke-dashoffset:1300;opacity:0}
-    22%{opacity:1}
-    50%{stroke-dashoffset:0;opacity:1}
-    80%{stroke-dashoffset:0;opacity:1}
-    92%,100%{stroke-dashoffset:0;opacity:0}
+  .letters{opacity:0;animation:settle var(--loop) cubic-bezier(.2,.6,.2,1) infinite}
+  @keyframes settle{
+    0%,40%{opacity:0;filter:blur(14px);transform:translateY(2.5%) scale(1.02)}
+    58%{opacity:1;filter:blur(0);transform:none}
+    88%{opacity:1;filter:blur(0);transform:none}
+    96%,100%{opacity:0;filter:blur(6px);transform:none}
   }
-  .draft .tip{fill:var(--cream);offset-path:path('M357 427 A322 322 0 1 1 960 646');
-    animation:travel var(--loop) cubic-bezier(.5,0,.15,1) infinite}
-  @keyframes travel{0%,20%{offset-distance:0%;opacity:0}22%{opacity:1}50%{offset-distance:100%;opacity:1}53%,100%{offset-distance:100%;opacity:0}}
+  /* a soft light that follows the arc tip */
+  .tip{position:absolute;width:9%;aspect-ratio:1;border-radius:50%;left:50.7%;top:46.6%;
+       background:radial-gradient(circle,rgba(255,250,235,.9),rgba(255,240,210,.35) 35%,transparent 70%);
+       transform-origin:center;mix-blend-mode:screen;opacity:0;
+       animation:tipmove var(--loop) cubic-bezier(.55,0,.12,1) infinite}
+  @keyframes tipmove{
+    0%,18%{transform:rotate(-170deg) translateX(40.7cqw);opacity:0}
+    19%{opacity:1}
+    46%{transform:rotate(46deg) translateX(40.7cqw);opacity:1}
+    50%,100%{transform:rotate(46deg) translateX(40.7cqw);opacity:0}
+  }
+  .mark{container-type:inline-size}
+  .tipwrap{position:absolute;left:55.2%;top:51.1%;width:0;height:0}
+  .tipwrap .tip{left:-4.5cqw;top:-4.5cqw}
 
+  /* ---- type ---- */
+  .copy{position:absolute;left:0;right:0;bottom:4.5%;text-align:center;pointer-events:none}
+  .copy>*{opacity:0;animation:rise var(--loop) ease-out infinite;animation-delay:var(--d,0s)}
+  @keyframes rise{0%,62%{opacity:0;transform:translateY(12px)}70%{opacity:1;transform:none}90%{opacity:1;transform:none}96%,100%{opacity:0}}
+  .copy h1{font-weight:300;font-size:clamp(1.6rem,5.2vmin,3.6rem);line-height:1.05;letter-spacing:.06em;text-shadow:0 2px 24px rgba(0,0,0,.55)}
+  .copy h1 b{font-weight:500}
+  .copy .rule{width:5.5vmin;height:1px;margin:1.6vmin auto;background:rgba(255,255,255,.75);--d:.35s}
+  .copy .meta{font-weight:400;font-size:clamp(.85rem,2.2vmin,1.35rem);letter-spacing:.3em;text-transform:uppercase;--d:.6s;text-shadow:0 1px 14px rgba(0,0,0,.6)}
+  .copy .meta i{font-style:normal;opacity:.6;margin:0 .5em}
+  .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,16,31,.15) 0%,transparent 30%,transparent 60%,rgba(6,16,31,.82) 100%);pointer-events:none}
 
-  /* ---- type block ---- */
-  .copy{position:absolute;left:6%;right:6%;bottom:6%;pointer-events:none;display:grid;grid-template-columns:1fr auto;align-items:end;gap:2vmin}
-  .copy > *{opacity:0;animation:rise var(--loop) ease-out infinite;animation-delay:var(--d,0s)}
-  @keyframes rise{0%,58%{opacity:0;transform:translateY(10px)}64%{opacity:1;transform:none}88%{opacity:1;transform:none}94%,100%{opacity:0}}
-  .kicker{font:400 clamp(.6rem,1.3vmin,.8rem)/1.5 "Space Mono";letter-spacing:.32em;text-transform:uppercase;color:var(--steel);--d:0s}
-  h1{font:400 clamp(1.1rem,3.3vmin,2.3rem)/1.15 Michroma,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--cream);margin-top:.5em;--d:.5s;grid-column:1}
-  .meta{font:400 clamp(.6rem,1.3vmin,.8rem)/1.7 "Space Mono";letter-spacing:.25em;text-transform:uppercase;color:var(--cream);
-        border:1px solid var(--steel);padding:.8em 1.1em;text-align:right;--d:1s;grid-column:2;grid-row:1/3}
-  .meta b{display:block;font-weight:700;color:var(--steel)}
-  .rulebar{grid-column:1/3;height:1px;background:var(--steel);transform-origin:left;animation:bar var(--loop) ease-in-out infinite;--d:.3s}
-  @keyframes bar{0%,58%{opacity:0;transform:scaleX(0)}70%{opacity:1;transform:scaleX(1)}88%{opacity:1}94%,100%{opacity:0}}
-
-  .vignette{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,transparent 60%,rgba(4,10,22,.55) 100%),linear-gradient(180deg,transparent 62%,rgba(4,10,22,.78) 100%);pointer-events:none}
-  .hint{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);font:400 10px/1 "Space Mono";letter-spacing:.2em;text-transform:uppercase;color:rgba(241,233,214,.3)}
+  .hint{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);font:300 12px/1 "Cormorant Garamond";letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.3)}
   @media (prefers-reduced-motion:reduce){*{animation-duration:0.001s!important}}
 </style>
 </head>
@@ -95,134 +88,70 @@
 <div class="stage">
   <div class="backdrop"></div>
   <div class="frame" id="frame">
-    <img class="plate" src="assets/iva-stadshuset.webp" alt="IVA över Stockholms stadshus i gryningen">
-    <img class="sky"   src="assets/iva-stadshuset.webp" alt="" aria-hidden="true">
-    <img class="water" src="assets/iva-stadshuset.webp" alt="" aria-hidden="true">
+    <img class="plate" src="assets/stadshuset-clean.webp" alt="Stockholms stadshus i gryningen">
+    <img class="sky"   src="assets/stadshuset-clean.webp" alt="" aria-hidden="true">
+    <img class="water" src="assets/stadshuset-clean.webp" alt="" aria-hidden="true">
     <canvas id="sun"></canvas>
+    <div class="shade"></div>
 
-    <svg class="draft" viewBox="0 0 1254 1254" aria-hidden="true">
-      <defs>
-        <filter id="ripple" x="0" y="0" width="100%" height="100%">
-          <feTurbulence id="turb" type="fractalNoise" baseFrequency="0.012 0.08" numOctaves="2" seed="3" result="n"/>
-          <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G"/>
-        </filter>
-      </defs>
-
-      <!-- construction geometry -->
-      <circle class="c dash draw" style="--len:2170" cx="668" cy="510" r="322"/>
-      <circle class="c draw" style="--len:2700" cx="668" cy="510" r="400" opacity=".35"/>
-      <line class="c draw" style="--len:1254" x1="0" y1="510" x2="1254" y2="510"/>
-      <line class="c draw" style="--len:1254" x1="668" y1="0" x2="668" y2="1254"/>
-      <line class="c draw" style="--len:1254" x1="0" y1="1000" x2="1254" y2="1000"/>
-      <line class="c draw" style="--len:345" x1="668" y1="510" x2="896" y2="282" opacity=".9"/>
-      <!-- centre mark + ticks -->
-      <g class="c fade">
-        <circle cx="668" cy="510" r="6" fill="none"/>
-        <path d="M668 490v-14M668 530v14M648 510h-14M688 510h14"/>
-        <path d="M40 1000v-12M1214 1000v-12M660 1000v-12"/>
-        <path d="M40 510v12M1214 510v12"/>
-        <path d="M1060 790l45-45M1060 745v45h45" />
-      </g>
-      <!-- labels -->
-      <g class="lbl fade">
-        <text x="56" y="498">AX. 00 — HORISONT  ·  N 59°19′</text>
-        <text x="56" y="988">PLAN 00 — RIDDARFJÄRDEN</text>
-        <text x="690" y="300">R = 322</text>
-        <text x="684" y="1236">CL</text>
-        <text x="1050" y="880">SOL 07:36</text>
-        <text x="56" y="1236">IVA / HS 2026 / BLAD 107</text>
-        <text x="1030" y="60" text-anchor="end">STOCKHOLM — STADSHUSET</text>
-      </g>
-
-      <!-- the arc -->
-      <path class="arc" d="M357 427 A322 322 0 1 1 960 646"/>
-      <rect class="tip" x="-6" y="-6" width="12" height="12"/>
-    </svg>
-
-    <canvas id="grain"></canvas>
-    <div class="vignette"></div>
+    <div class="mark" aria-label="IVA">
+      <img class="arc"     src="assets/iva-arc.png"     alt="">
+      <img class="letters" src="assets/iva-letters.png" alt="IVA">
+      <div class="tipwrap"><div class="tip"></div></div>
+    </div>
 
     <div class="copy">
-      <div class="kicker">Kungl. Ingenjörsvetenskapsakademien</div>
-      <div class="meta"><b>Stockholms stadshus</b>23 oktober 2026</div>
-      <h1>107:e<br>Högtids-<br>sammankomsten</h1>
-      <div class="rulebar"></div>
+      <h1>107:e <b>Högtidssammankomsten</b></h1>
+      <div class="rule"></div>
+      <div class="meta">Stockholms stadshus<i>·</i>23 oktober 2026</div>
     </div>
+
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <filter id="ripple" x="0" y="0" width="100%" height="100%">
+        <feTurbulence id="turb" type="fractalNoise" baseFrequency="0.012 0.08" numOctaves="2" seed="3" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+    </svg>
   </div>
 </div>
 <div class="hint">klicka för helskärm · mellanslag pausar</div>
 
 <script>
 (() => {
-  const LOOP = 18000;
+  const LOOP = 16000;
   const frame = document.getElementById('frame');
-  const sun = document.getElementById('sun'), grain = document.getElementById('grain');
-  const sc = sun.getContext('2d'), gc = grain.getContext('2d');
+  const sun = document.getElementById('sun'), sc = sun.getContext('2d');
   const turb = document.getElementById('turb');
-  let W, H, dpr = Math.min(devicePixelRatio || 1, 2), grainTiles = [];
+  let W, H, dpr = Math.min(devicePixelRatio || 1, 2);
+  function resize(){ const r = frame.getBoundingClientRect(); W = r.width; H = r.height;
+    sun.width = W*dpr; sun.height = H*dpr; sc.setTransform(dpr,0,0,dpr,0,0); }
+  addEventListener('resize', resize); resize();
 
-  function makeGrain(){
-    grainTiles = [];
-    for (let k=0;k<6;k++){
-      const t = document.createElement('canvas'); t.width = t.height = 256;
-      const c = t.getContext('2d'), id = c.createImageData(256,256);
-      for (let i=0;i<id.data.length;i+=4){ const v = 110 + Math.random()*90|0; id.data[i]=id.data[i+1]=id.data[i+2]=v; id.data[i+3]=255; }
-      c.putImageData(id,0,0); grainTiles.push(t);
-    }
-  }
-  function resize(){
-    const r = frame.getBoundingClientRect(); W = r.width; H = r.height;
-    for (const c of [sun, grain]) { c.width = W*dpr; c.height = H*dpr; c.getContext('2d').setTransform(dpr,0,0,dpr,0,0); }
-  }
-  addEventListener('resize', resize); resize(); makeGrain();
-
-  const SUN = {x: 0.845, y: 0.79};
+  const SUN = {x:0.845, y:0.79};
   const ease = t => t<0?0:t>1?1:t*t*(3-2*t);
-
   let paused = false, t0 = performance.now();
+
   function tick(now){
     requestAnimationFrame(tick);
     if (paused) return;
     const el = now - t0, ph = (el % LOOP) / LOOP;
-    const light = ease((ph-.16)/.32) * (1-ease((ph-.86)/.12));
-
-    // ---- hard-edged sunburst, slow rotation, print-poster flavour ----
+    const light = ease((ph-.2)/.35) * (1-ease((ph-.88)/.1));
     sc.clearRect(0,0,W,H);
-    const sx = SUN.x*W, sy = SUN.y*H, R = W*1.1;
-    if (light>0){
-      const g = sc.createRadialGradient(sx,sy,0,sx,sy,W*0.35);
-      g.addColorStop(0,`rgba(255,232,190,${0.45*light})`);
-      g.addColorStop(0.25,`rgba(240,190,120,${0.14*light})`);
-      g.addColorStop(1,'rgba(240,190,120,0)');
+    if (light > 0){
+      const sx = SUN.x*W, sy = SUN.y*H, breathe = 1 + 0.03*Math.sin(el/1800);
+      const g = sc.createRadialGradient(sx,sy,0,sx,sy,W*0.6*breathe);
+      g.addColorStop(0,`rgba(255,238,200,${0.65*light})`);
+      g.addColorStop(0.1,`rgba(255,205,130,${0.28*light})`);
+      g.addColorStop(0.4,`rgba(255,160,80,${0.08*light})`);
+      g.addColorStop(1,'rgba(255,140,60,0)');
       sc.fillStyle = g; sc.fillRect(0,0,W,H);
-
-      sc.save(); sc.translate(sx,sy); sc.rotate(el/140000);
-      const n = 36;
-      for (let i=0;i<n;i++){
-        const a = i*(Math.PI*2/n), w = Math.PI/n*0.5;
-        const lg = sc.createLinearGradient(0,0,Math.cos(a)*R,Math.sin(a)*R);
-        lg.addColorStop(0,`rgba(245,225,180,${0.15*light})`);
-        lg.addColorStop(0.6,`rgba(245,225,180,${0.04*light})`);
-        lg.addColorStop(1,'rgba(245,225,180,0)');
-        sc.fillStyle = lg; sc.beginPath(); sc.moveTo(0,0); sc.arc(0,0,R,a-w,a+w); sc.closePath(); sc.fill();
-      }
-      sc.restore();
-
-      // reflection column on the water
-      sc.fillStyle = `rgba(245,215,160,${0.22*light})`;
-      sc.beginPath(); sc.moveTo(sx-W*0.012,H*0.86); sc.lineTo(sx+W*0.012,H*0.86); sc.lineTo(sx+W*0.06,H); sc.lineTo(sx-W*0.06,H); sc.closePath(); sc.fill();
+      // reflection on the water
+      const wg = sc.createLinearGradient(0,H*0.86,0,H);
+      wg.addColorStop(0,`rgba(255,215,150,${0.3*light})`); wg.addColorStop(1,'rgba(255,215,150,0)');
+      sc.fillStyle = wg; sc.beginPath();
+      sc.moveTo(sx-W*0.02,H*0.86); sc.lineTo(sx+W*0.02,H*0.86); sc.lineTo(sx+W*0.1,H); sc.lineTo(sx-W*0.1,H); sc.closePath(); sc.fill();
     }
-
-    // ---- print grain: tiled random tile each frame ----
-    if (grainTiles.length){
-      const t = grainTiles[Math.floor(el/80) % grainTiles.length];
-      gc.clearRect(0,0,W,H);
-      const pat = gc.createPattern(t,'repeat'); gc.fillStyle = pat;
-      gc.save(); gc.translate((el/13)%256|0, (el/29)%256|0); gc.fillRect(-256,-256,W+512,H+512); gc.restore();
-    }
-
-    // ---- water ripple ----
-    turb.setAttribute('baseFrequency', `${(0.012 + 0.002*Math.sin(el/700)).toFixed(4)} ${(0.08 + 0.01*Math.cos(el/900)).toFixed(4)}`);
+    turb.setAttribute('baseFrequency', `${(0.012+0.002*Math.sin(el/700)).toFixed(4)} ${(0.08+0.01*Math.cos(el/900)).toFixed(4)}`);
     turb.setAttribute('seed', Math.floor(el/180) % 50);
   }
   requestAnimationFrame(tick);
