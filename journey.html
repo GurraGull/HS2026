@@ -7,9 +7,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
 <style>
-  /* Layout: one 16:9 stage, a long drawn frieze panned by a camera; backgrounds crossfade per era. */
+  /* Layout: one 16:9 stage. A long drawn frieze is panned by a camera; every scene shares one grammar:
+     big year top-left, one drawing, caption bottom-left (place / visible / invisible), venue route at the foot. */
   :root{
-    --navy:#0b1b3a; --ink:#f1e9d6; --paper:#efe6d2; --gold:#e6c36a; --cyan:#7fd6ff;
+    --navy:#0b1b3a; --ink:#f1e9d6; --gold:#e6c36a;
     --bg:#0b1b3a; --fg:#f1e9d6; --accent:#e6c36a;
     --serif:"Cormorant Garamond",Georgia,serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
     color-scheme:dark;
@@ -17,64 +18,70 @@
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;margin:0;background:#06101f;overflow:hidden;font-family:var(--serif);color:var(--fg)}
   .stage{position:fixed;inset:0;display:grid;place-items:center;background:#06101f}
-  .frame{position:relative;width:min(100vw,177.78vh);aspect-ratio:16/9;max-width:100%;overflow:hidden;isolation:isolate;background:var(--bg);transition:background 1.2s linear;cursor:crosshair}
+  .frame{position:relative;width:min(100vw,177.78vh);aspect-ratio:16/9;max-width:100%;overflow:hidden;isolation:isolate;background:var(--bg);transition:background 1.6s linear;cursor:crosshair}
 
-  /* era textures, faded in by script */
-  .tex{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity 1.2s linear}
+  .tex{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity 1.6s linear}
   .tex.grid{background-image:linear-gradient(rgba(241,233,214,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(241,233,214,.07) 1px,transparent 1px);background-size:4% 4%}
-  .tex.halftone{background-image:radial-gradient(rgba(11,27,58,.22) 1px,transparent 1.4px);background-size:7px 7px}
-  .tex.scan{background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 2px,transparent 2px 4px)}
-  .tex.data{background-image:linear-gradient(rgba(127,214,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(127,214,255,.06) 1px,transparent 1px);background-size:2.5% 2.5%}
-  .tex.paint{background:url(assets/stadshuset-clean.webp) center/cover;transition:opacity 2.4s ease}
+  .tex.paint{background:url(assets/stadshuset-clean.webp) center/cover;transition:opacity 2.6s ease}
   .tex.vignette{opacity:1;background:radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(0,0,0,.45) 100%)}
 
   svg.frieze{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}
   svg.frieze *{vector-effect:non-scaling-stroke}
   .ink{fill:none;stroke:var(--fg);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-  .ink.thin{stroke-width:.9;opacity:.75}
+  .ink.thin{stroke-width:.9;opacity:.7}
   .ink.bold{stroke-width:2.6}
   .ink.gold{stroke:var(--accent)}
+  .ink.hatch{stroke-width:.7;opacity:.45}
   .fill{fill:var(--fg);stroke:none;opacity:0}
   .fill.gold{fill:var(--accent)}
   .fill.dim{opacity:0}
   .lbl{font-family:var(--mono);font-size:14px;letter-spacing:.16em;fill:var(--fg);opacity:0}
+  .lbl.gold{fill:var(--accent)}
   .big{font-family:var(--serif);font-weight:300;font-size:150px;letter-spacing:.04em;fill:var(--fg);opacity:0}
 
-  /* captions */
-  .cap{position:absolute;left:6%;right:6%;bottom:11%;display:grid;grid-template-columns:1fr;gap:.5vw;pointer-events:none;transform:translateY(8px);opacity:0;transition:opacity .9s ease,transform .9s ease}
+  /* caption: identical grammar in every scene */
+  .cap{position:absolute;left:6%;right:40%;bottom:14.5%;display:grid;gap:.45vw;pointer-events:none;transform:translateY(8px);opacity:0;transition:opacity .9s ease,transform .9s ease}
   .cap.on{opacity:1;transform:none}
-  .cap .place{font-family:var(--mono);font-weight:300;font-size:clamp(.6rem,1.05vw,1rem);letter-spacing:.3em;text-transform:uppercase;color:var(--accent)}
-  .cap h2{font-weight:300;font-size:clamp(1.2rem,2.9vw,3rem);line-height:1.05;letter-spacing:.02em;text-wrap:balance;max-width:28ch}
-  .cap .seen{font-size:clamp(.8rem,1.25vw,1.3rem);font-style:italic;opacity:.8;max-width:60ch}
+  .cap .place{font-family:var(--mono);font-weight:300;font-size:clamp(.6rem,1.0vw,1rem);letter-spacing:.3em;text-transform:uppercase;color:var(--accent)}
+  .cap h2{font-weight:300;font-size:clamp(1.2rem,2.8vw,3rem);line-height:1.05;letter-spacing:.02em;text-wrap:balance}
+  .cap .row{display:grid;grid-template-columns:auto 1fr;gap:.9vw;align-items:baseline;font-size:clamp(.78rem,1.2vw,1.25rem);line-height:1.35}
+  .cap .row b{font-family:var(--mono);font-weight:300;font-size:.62em;letter-spacing:.25em;text-transform:uppercase;opacity:.6;padding-top:.2em}
+  .cap .row i{font-style:italic;opacity:.9}
 
-  /* timeline, the only chrome */
-  .tl{position:absolute;left:6%;right:6%;bottom:5.5%;height:1px;background:color-mix(in srgb,var(--fg) 35%,transparent);pointer-events:none}
+  /* the route: where the ceremony was held, year by year */
+  .tl{position:absolute;left:6%;right:6%;bottom:6.5%;height:1px;background:color-mix(in srgb,var(--fg) 35%,transparent);pointer-events:none}
   .tl i{position:absolute;top:-4px;width:1px;height:9px;background:var(--fg);opacity:.6}
-  .tl b{position:absolute;top:10px;transform:translateX(-50%);font-family:var(--mono);font-weight:300;font-size:clamp(.5rem,.8vw,.75rem);letter-spacing:.12em;opacity:.55;color:var(--fg)}
+  .tl b,.tl u{position:absolute;transform:translateX(-50%);font-family:var(--mono);font-weight:300;letter-spacing:.12em;color:var(--fg);white-space:nowrap;text-decoration:none}
+  .tl b{top:10px;font-size:clamp(.5rem,.8vw,.75rem);opacity:.75}
+  .tl u{top:-28px;font-size:clamp(.5rem,.72vw,.7rem);opacity:.7;color:var(--accent);text-transform:uppercase;letter-spacing:.2em}
   .tl .dot{position:absolute;top:-4px;width:9px;height:9px;margin-left:-4px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+  .tl .key{position:absolute;left:0;top:-48px;font-family:var(--mono);font-size:clamp(.42rem,.62vw,.6rem);letter-spacing:.2em;text-transform:uppercase;opacity:.45;color:var(--fg)}
+
+  /* opening title */
+  .intro{position:absolute;inset:0;display:grid;place-content:center;text-align:center;gap:1vw;pointer-events:none;transition:opacity 1.2s ease}
+  .intro .k{font-family:var(--mono);font-weight:300;font-size:clamp(.6rem,1vw,1rem);letter-spacing:.35em;text-transform:uppercase;color:var(--accent)}
+  .intro h1{font-weight:300;font-size:clamp(1.6rem,4vw,4.2rem);line-height:1.05;letter-spacing:.03em;text-wrap:balance;max-width:22ch}
+  .intro p{font-style:italic;font-size:clamp(.9rem,1.5vw,1.5rem);opacity:.75}
 
   /* final scene: the mark */
   .mark{position:absolute;left:34.3%;top:14%;width:31.4%;aspect-ratio:707/591;opacity:0;filter:drop-shadow(0 6px 30px rgba(4,12,30,.55))}
   .mark img{position:absolute;inset:0;width:100%;height:100%}
   .mark .arc{-webkit-mask:conic-gradient(from 280deg at 55.2% 51.1%,#000 0 var(--sw,0deg),transparent var(--sw,0deg));mask:conic-gradient(from 280deg at 55.2% 51.1%,#000 0 var(--sw,0deg),transparent var(--sw,0deg))}
   .mark .letters{opacity:0;filter:blur(14px);transform:translateY(2.5%)}
-  .final{position:absolute;left:0;right:0;bottom:12%;text-align:center;pointer-events:none;opacity:0}
+  .final{position:absolute;left:0;right:0;bottom:14.5%;text-align:center;pointer-events:none;opacity:0}
   .final h1{font-weight:300;font-size:clamp(1.3rem,3.4vw,3.6rem);letter-spacing:.06em;line-height:1.05;text-shadow:0 2px 24px rgba(0,0,0,.55)}
   .final h1 b{font-weight:500}
   .final .meta{margin-top:.6em;font-size:clamp(.7rem,1.3vw,1.3rem);letter-spacing:.3em;text-transform:uppercase;text-shadow:0 1px 14px rgba(0,0,0,.6)}
   .shade{position:absolute;inset:0;pointer-events:none;opacity:0;background:linear-gradient(180deg,transparent 55%,rgba(6,16,31,.8) 100%);transition:opacity 2s}
 
   .hint{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);font-family:var(--mono);font-weight:300;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:rgba(241,233,214,.35);white-space:nowrap}
-  @media (prefers-reduced-motion:reduce){.cap,.tex{transition:none}}
+  @media (prefers-reduced-motion:reduce){.cap,.tex,.intro{transition:none}}
 </style>
 </head>
 <body>
 <div class="stage">
   <div class="frame" id="frame">
     <div class="tex grid" data-tex="grid"></div>
-    <div class="tex halftone" data-tex="halftone"></div>
-    <div class="tex scan" data-tex="scan"></div>
-    <div class="tex data" data-tex="data"></div>
     <div class="tex paint" data-tex="paint"></div>
     <svg class="frieze" id="frieze" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
     <div class="tex vignette"></div>
@@ -89,8 +96,19 @@
       <div class="meta">Stockholms stadshus · 23 oktober 2026</div>
     </div>
 
-    <div class="cap" id="cap"><div class="place" id="capPlace"></div><h2 id="capTitle"></h2><div class="seen" id="capSeen"></div></div>
-    <div class="tl" id="tl"></div>
+    <div class="intro" id="intro">
+      <div class="k">Kungl. Ingenjörsvetenskapsakademien</div>
+      <h1>Högtidssammankomstens väg genom Stockholm</h1>
+      <p>Från bankettsalen på Grev Turegatan 1920 till Stadshuset 2026</p>
+    </div>
+
+    <div class="cap" id="cap">
+      <div class="place" id="capPlace"></div>
+      <h2 id="capTitle"></h2>
+      <div class="row"><b>Synligt</b><span id="capSeen"></span></div>
+      <div class="row"><b>Osynligt</b><i id="capUnseen"></i></div>
+    </div>
+    <div class="tl" id="tl"><span class="key">Högtidssammankomsten hålls i</span></div>
   </div>
 </div>
 <div class="hint">piltangenter hoppar mellan år · mellanslag pausar · klick ger helskärm</div>
@@ -101,212 +119,256 @@
 const NS = 'http://www.w3.org/2000/svg';
 const SW = 1600, GROUND = 610;
 
-/* ------------------------------------------------------------------ scenes (data) */
+/* ------------------------------------------------------------------ scenes, from "Teknik i samhällets tjänst" (IVA 2019) */
 const SCENES = [
-  { year:1919, place:'Grev Turegatan 14', title:'IVA grundas.', seen:'Synligt: ritningar på ett bord, en dörr som öppnas. Osynligt: idén att samla ingenjörerna. I fjärran ett torn i byggställning.',
-    bg:'#0b1b3a', fg:'#f1e9d6', accent:'#e6c36a', tex:['grid'] },
-  { year:1923, place:'Riddarfjärden', title:'Stadshuset invigs.', seen:'Synligt: åtta miljoner tegel och tre kronor. Osynligt: betongen, stålet och en akademi som är fyra år gammal.',
-    bg:'#0b1b3a', fg:'#f1e9d6', accent:'#e6c36a', tex:['grid'] },
-  { year:1930, place:'Stockholmsutställningen', title:'Funktionalismen.', seen:'Synligt: reklammasten, platta tak, raka linjer. Osynligt: elektriskt ljus i varje hem.',
-    bg:'#efe6d2', fg:'#0b1b3a', accent:'#c8452b', tex:[] },
-  { year:1950, place:'Hötorget', title:'Tunnelbanan öppnar.', seen:'Synligt: ett T i ringen. Osynligt: en stad byggd under marken.',
-    bg:'#d9d4c7', fg:'#1a1a1a', accent:'#1a6aa8', tex:['halftone'] },
-  { year:1967, place:'Sergels torg', title:'Hötorgsskraporna och Dagen H.', seen:'Synligt: fem skivhus och en glasobelisk. Osynligt: trafiken byter sida över en natt, planerad till minuten.',
-    bg:'#2b2a28', fg:'#efe1c8', accent:'#f08a3c', tex:['scan'] },
-  { year:1981, place:'Kaknästornet', title:'NMT, det första mobilnätet.', seen:'Synligt: ett torn och en telefon på 760 gram. Osynligt: radiovågor över Riddarfjärden.',
-    bg:'#101826', fg:'#dfe9f5', accent:'#7fd6ff', tex:['scan','data'] },
-  { year:2008, place:'Kista', title:'Fiber.', seen:'Synligt: ett torn av glas. Osynligt: ljus genom kablar, en stad som pratar med sig själv.',
-    bg:'#070d1a', fg:'#dfe9f5', accent:'#7fd6ff', tex:['data'] },
-  { year:2026, place:'Stadshuset', title:'', seen:'',
-    bg:'#0b1b3a', fg:'#f1e9d6', accent:'#e6c36a', tex:['paint'] },
+  { year:1919, place:'Grev Turegatan 24, i dag 14', venue:'Grev Turegatan', title:'Huset med hästhuvudet.',
+    seen:'Ett hästhuvud i sten över porten. Huset byggdes 1899 som ridhus och nöjespalats, Stockholms Tattersall.',
+    unseen:'I mars 1919, innan akademien finns, köper Axel F. Enström fastigheten. Industrin skjuter till 1,8 miljoner kronor.' },
+  { year:1920, place:'Bankettsalen, Grev Turegatan', venue:'Bankettsalen', title:'Den första Högtidssammankomsten.',
+    seen:'Kristallkronor, frackar, 17 april. Ett handskrivet brev från statsminister Branting som tackar nej.',
+    unseen:'Året efter flyttas festen till födelsedagen 24 oktober, kungen kommer och de första medaljerna delas ut, en till Elin Cederblom.' },
+  { year:1922, place:'Västra stambanan', venue:'Bankettsalen', title:'Elektrobilen och stambanan.',
+    seen:'Ett montagetåg sätter upp kontaktledning mellan Stockholm och Göteborg. En ellastbil byter batteri.',
+    unseen:'Enström leder utredningarna som avgör hur järnvägen får sin el. Rapporten om elektrobilar föreslår batteribyte. Samma idé som 2026.' },
+  { year:1923, place:'Gårdshuset, Grev Turegatan', venue:'Bankettsalen', title:'Laboratoriet i köket.',
+    seen:'Elektrovärmeinstitutet i ett ombyggt kök på gården. På vinden ett kylskåp utan rörliga delar.',
+    unseen:'500 utredningar på tio år. Tekniska museet föds på IVA:s vind 1924 och bor där i tolv år.' },
+  { year:1932, place:'Vinterträdgården, Grand Hôtel', venue:'Grand Hôtel', title:'IVA-spisen.',
+    seen:'En vedspis som halverar vedåtgången. 270 kronor emaljerad. Festen har flyttat till Grand, bankettsalen blev för trång.',
+    unseen:'Spisen blir ingen succé. Men Feras kokbok om elektrisk matlagning sägs vara tryckt i störst upplaga näst Bibeln.' },
+  { year:1939, place:'Bankettsalen, krigshösten', venue:'Grev Turegatan', title:'Atomtalet.',
+    seen:'Enström i talarstolen 24 oktober. Kronprinsen räcker honom Stora guldmedaljen.',
+    unseen:'Han förutspår att atomkärnan blir bränsle inom tjugo år. Samma höst startar Gengasnämnden och forskningens beredskapsorganisation.' },
+  { year:1954, place:'IVA:s forskningsstation vid KTH', venue:'Konserthuset', title:'Reaktorn i berget.',
+    seen:'R1, Sveriges första kärnreaktor, nedsprängd under IVA:s forskningsstation. Året efter visas den för 130 riksdagsledamöter.',
+    unseen:'1965 lämnar IVA en utredning som får löpsedeln "Akademi förkastar atomprogrammet". Den svenska linjen överges 1970.' },
+  { year:1984, place:'Under gården, Grev Turegatan', venue:'Konserthuset', title:'Salen under gården.',
+    seen:'Wallenbergsalen grävs ner genom källarvalven, utan ritningar på huset. Kungen inviger 22 februari.',
+    unseen:'Samma år den första Royal Technology Mission, till Silicon Valley. 1970 valdes Irma Åstrand in som första kvinna.' },
+  { year:2026, place:'Stadshuset', venue:'Stadshuset', title:'', seen:'', unseen:'' },
 ];
 
 /* ------------------------------------------------------------------ drawing helpers */
 const svg = document.getElementById('frieze');
 const el = (n, a, parent) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); (parent || svg).appendChild(e); return e; };
-let order = 0;                                   // draw order within a scene
-function P(g, d, cls = 'ink', delay) { const p = el('path', { d, class: cls }, g); p.dataset.o = delay ?? order++; return p; }
+let order = 0;
+function P(g, d, cls = 'ink') { const p = el('path', { d, class: cls }, g); p.dataset.o = order++; return p; }
 function L(g, x1, y1, x2, y2, cls) { return P(g, `M${x1} ${y1}L${x2} ${y2}`, cls); }
 function R(g, x, y, w, h, cls) { return P(g, `M${x} ${y}h${w}v${h}h${-w}Z`, cls); }
 function C(g, cx, cy, r, cls = 'ink') { return P(g, `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0`, cls); }
-function FC(g, cx, cy, r, cls = 'fill') { return F(g, `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0Z`, cls); }
 function F(g, d, cls = 'fill') { const p = el('path', { d, class: cls }, g); p.dataset.o = order++; p.dataset.fill = 1; return p; }
+function FC(g, cx, cy, r, cls = 'fill') { return F(g, `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0Z`, cls); }
 function T(g, x, y, s, cls = 'lbl', extra = {}) { const t = el('text', { x, y, class: cls, ...extra }, g); t.textContent = s; t.dataset.o = order++; t.dataset.fill = 1; return t; }
-function windows(g, x, y, w, h, cols, rows, cls = 'ink thin') {
-  const cw = w / cols, rh = h / rows;
-  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) R(g, x + cw * c + cw * .28, y + rh * r + rh * .22, cw * .44, rh * .56, cls);
-}
-function skyline(g, x0, pts, cls = 'ink thin') { let d = `M${x0} ${GROUND}`; let x = x0; for (const [w, h] of pts) { d += `V${GROUND - h}h${w}`; x += w; } d += `V${GROUND}`; return P(g, d, cls); }
+function windows(g, x, y, w, h, cols, rows, cls = 'ink thin') { const cw = w / cols, rh = h / rows;
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) R(g, x + cw * c + cw * .28, y + rh * r + rh * .22, cw * .44, rh * .56, cls); }
 function ground(g, x) { return L(g, x + 40, GROUND, x + SW - 40, GROUND, 'ink'); }
-function water(g, x, y, rows = 5) { for (let i = 0; i < rows; i++) { const yy = y + 18 + i * 24; P(g, `M${x + 60 + i * 30} ${yy}` + Array.from({ length: 14 }, (_, k) => `q25 -6 50 0`).join(''), 'ink thin'); } }
-/* Stadshuset silhouette, origin = left foot of the block, scale s */
+function hatch(g, x, y, w, h, step = 18) { for (let i = -h; i < w; i += step) P(g, `M${x + Math.max(0, i)} ${y + Math.max(0, -i)}L${x + Math.min(w, i + h)} ${y + Math.min(h, h - (i + h - w) * ((i + h) > w ? 1 : 0))}`, 'ink hatch'); }
+function year(g, x, y) { T(g, x + 120, 240, String(y), 'big'); }
 function stadshuset(g, x, y, s = 1, opts = {}) {
   const S = v => v * s;
-  // main block with arcade
-  R(g, x, y - S(150), S(420), S(150), opts.cls || 'ink');
-  L(g, x, y - S(150), x + S(420), y - S(150), 'ink thin');
+  R(g, x, y - S(150), S(420), S(150), opts.cls || 'ink'); L(g, x, y - S(150), x + S(420), y - S(150), 'ink thin');
   for (let i = 0; i < 9; i++) P(g, `M${x + S(24 + i * 44)} ${y}v${-S(44)}a${S(18)} ${S(18)} 0 0 1 ${S(36)} 0v${S(44)}`, 'ink thin');
   windows(g, x + S(10), y - S(140), S(400), S(80), 10, 2);
-  // tower
   const tx = x + S(430), tw = S(62), th = S(400);
-  R(g, tx, y - th, tw, th, opts.cls || 'ink');
-  windows(g, tx + S(6), y - th + S(30), tw - S(12), th - S(120), 2, 7, 'ink thin');
-  // lantern + three crowns
+  R(g, tx, y - th, tw, th, opts.cls || 'ink'); windows(g, tx + S(6), y - th + S(30), tw - S(12), th - S(120), 2, 7, 'ink thin');
   P(g, `M${tx - S(6)} ${y - th}h${tw + S(12)}l${-S(8)} ${-S(14)}h${-(tw - S(4))}Z`, 'ink thin');
   P(g, `M${tx + S(14)} ${y - th - S(14)}v${-S(26)}h${S(34)}v${S(26)}`, 'ink thin');
   P(g, `M${tx + S(31)} ${y - th - S(40)}v${-S(40)}`, 'ink');
-  P(g, `M${tx + S(31)} ${y - th - S(80)}l${-S(12)} ${S(10)}m${S(12)} ${-S(10)}l${S(12)} ${S(10)}m${-S(12)} ${-S(10)}v${-S(10)}`, 'ink gold');
   F(g, `M${tx + S(23)} ${y - th - S(86)}l${S(8)} ${-S(10)}l${S(8)} ${S(10)}Z`, 'fill gold');
-  if (opts.scaffold) {
-    for (let i = 0; i < 6; i++) L(g, tx - S(18), y - S(60) - i * S(60), tx + tw + S(18), y - S(60) - i * S(60), 'ink thin');
-    L(g, tx - S(18), y, tx - S(18), y - th - S(20), 'ink thin'); L(g, tx + tw + S(18), y, tx + tw + S(18), y - th - S(20), 'ink thin');
-    for (let i = 0; i < 6; i++) L(g, tx - S(18), y - S(60) - i * S(60), tx + tw + S(18), y - i * S(60), 'ink thin');
-  }
+}
+/* the house on Grev Turegatan: street façade, five storeys, arched portal */
+function house(g, x, w = 560, h = 420) {
+  R(g, x, GROUND - h, w, h, 'ink'); L(g, x, GROUND - h + 70, x + w, GROUND - h + 70, 'ink thin');
+  windows(g, x, GROUND - h + 80, w, h - 180, 6, 3);
+  P(g, `M${x + w/2 - 40} ${GROUND}v-90a40 40 0 0 1 80 0v90`, 'ink bold');
+  return { px: x + w/2, py: GROUND - 90 };
 }
 
-/* ------------------------------------------------------------------ build the eight scenes */
+/* ------------------------------------------------------------------ build the scenes */
 const groups = SCENES.map((sc, i) => { const g = el('g', {}); g.dataset.i = i; return g; });
 
-/* 1919 — Grev Turegatan 14: a drafting room window, façade, the unfinished tower far away */
-(() => { const g = groups[0], x = 0; order = 0; ground(g, x);
-  T(g, x + 120, 240, '1919', 'big');
-  // façade
-  const fx = x + 120, fw = 560, fh = 420; R(g, fx, GROUND - fh, fw, fh, 'ink');
-  L(g, fx, GROUND - fh + 70, fx + fw, GROUND - fh + 70, 'ink thin');
-  windows(g, fx, GROUND - fh + 80, fw, fh - 180, 6, 3);
-  P(g, `M${fx + 240} ${GROUND}v-90a40 40 0 0 1 80 0v90`, 'ink bold');
-  T(g, fx + 150, GROUND - fh + 46, 'GREV TUREGATAN 14', 'lbl');
-  // drafting table detail, foreground right
-  P(g, `M${x + 900} ${GROUND}v-200l300 -40v200Z`, 'ink');
-  P(g, `M${x + 930} ${GROUND - 180}l240 -30`, 'ink thin'); P(g, `M${x + 930} ${GROUND - 140}l240 -30`, 'ink thin'); P(g, `M${x + 930} ${GROUND - 100}l240 -30`, 'ink thin');
-  P(g, `M${x + 1000} ${GROUND - 190}a60 60 0 0 1 120 -16`, 'ink gold');   // the arc, already on the drawing
-  // far away: the tower in scaffolding, small
-  stadshuset(g, x + 1290, GROUND - 160, .32, { scaffold: true, cls: 'ink thin' });
-  water(g, x + 1250, GROUND - 150, 3);
+/* 1919 — the horse head over the portal */
+(() => { const g = groups[0], x = 0; order = 0; ground(g, x); year(g, x, 1919);
+  const h = house(g, x + 200, 520, 330);
+  // horse head relief in a roundel above the portal, enlarged in a call-out to the right
+  C(g, h.px, GROUND - 150, 28, 'ink thin');
+  const hx = x + 1000, hy = 200, s = 2.6;
+  const head = `M${hx} ${hy + 60*s}l${10*s} ${-20*s}l${20*s} ${-10*s}l${15*s} ${-20*s}l${10*s} ${-10*s}l${7*s} ${12*s}l${18*s} ${6*s}l${20*s} ${22*s}v${70*s}h${-25*s}l${-5*s} ${-30*s}l${-25*s} ${-5*s}l${-20*s} ${10*s}l${-20*s} ${-7*s}Z`;
+  C(g, hx + 50*s, hy + 50*s, 68*s, 'ink thin');
+  P(g, head, 'ink bold'); F(g, head, 'fill dim');
+  C(g, hx + 60*s, hy + 22*s, 3*s, 'ink');                                  // eye
+  L(g, h.px + 28, GROUND - 150, hx - 10, hy + 50*s, 'ink thin');           // leader line
+  // horseshoes over the portal
+  P(g, `M${h.px - 22} ${GROUND - 118}a10 10 0 1 1 14 0`, 'ink thin'); P(g, `M${h.px + 8} ${GROUND - 118}a10 10 0 1 1 14 0`, 'ink thin');
+  T(g, x + 200, GROUND - 350, 'STOCKHOLMS TATTERSALL · RIDHUS 1899', 'lbl');
+  T(g, hx + 10, hy + 160*s, 'HÄSTHUVUDET SITTER KVAR', 'lbl gold');
 })();
 
-/* 1923 — Stadshuset, full, scaffolding gone, crowns in gold */
-(() => { const g = groups[1], x = SW; order = 0;
-  T(g, x + 120, 240, '1923', 'big');
-  L(g, x + 40, GROUND - 60, x + SW - 40, GROUND - 60, 'ink');       // quay
-  stadshuset(g, x + 560, GROUND - 60, 1.08);
-  skyline(g, x + 40, [[80, 60], [60, 90], [40, 70], [90, 110], [50, 60], [120, 95], [60, 140], [30, 60]]);
-  water(g, x, GROUND - 40, 7);
-  T(g, x + 1150, 300, 'ÖSTBERG · 1911–1923', 'lbl');
-  T(g, x + 1150, 326, '8 000 000 TEGEL', 'lbl');
+/* 1920 — the first ceremony in the banquet hall */
+(() => { const g = groups[1], x = SW; order = 0; ground(g, x); year(g, x, 1920);
+  // hall: wall line, two chandeliers, long table, chairs
+  L(g, x + 120, GROUND - 440, x + 1480, GROUND - 440, 'ink thin');
+  for (const cx of [x + 560, x + 1040]) {
+    L(g, cx, GROUND - 440, cx, GROUND - 380, 'ink thin');
+    P(g, `M${cx - 70} ${GROUND - 330}q70 -40 140 0`, 'ink'); P(g, `M${cx - 45} ${GROUND - 300}q45 -30 90 0`, 'ink thin');
+    for (let i = -3; i <= 3; i++) { L(g, cx + i * 22, GROUND - 332 + Math.abs(i) * 2, cx + i * 22, GROUND - 300 + Math.abs(i) * 3, 'ink thin'); FC(g, cx + i * 22, GROUND - 296 + Math.abs(i) * 3, 3, 'fill gold'); }
+    for (let i = -2; i <= 2; i++) L(g, cx + i * 28, GROUND - 380, cx + i * 28 * .8, GROUND - 334, 'ink thin');
+  }
+  // table in perspective
+  P(g, `M${x + 300} ${GROUND - 60}l140 -140h520l140 140Z`, 'ink'); L(g, x + 440, GROUND - 200, x + 960, GROUND - 200, 'ink thin');
+  for (let i = 0; i < 7; i++) { const cx = x + 470 + i * 80; P(g, `M${cx} ${GROUND - 205}v-50h22v50`, 'ink thin'); }
+  for (let i = 0; i < 5; i++) { const cx = x + 420 + i * 150; P(g, `M${cx} ${GROUND - 40}v-70h26v70`, 'ink thin'); }
+  // the letter
+  R(g, x + 1180, GROUND - 250, 230, 160, 'ink'); for (let i = 1; i < 6; i++) L(g, x + 1200, GROUND - 250 + i * 25, x + 1390 - (i % 2) * 40, GROUND - 250 + i * 25, 'ink thin');
+  T(g, x + 1180, GROUND - 270, 'STATSMINISTERN · 23 MARS 1920', 'lbl');
+  T(g, x + 1180, GROUND - 60, '"UNGA OCH LIFSKRAFTIGA"', 'lbl gold');
 })();
 
-/* 1930 — Stockholmsutställningen: the mast, flat pavilions, bulbs */
-(() => { const g = groups[2], x = SW * 2; order = 0; ground(g, x);
-  T(g, x + 120, 240, '1930', 'big');
-  // pavilions, poster-flat
-  F(g, `M${x + 120} ${GROUND}v-150h420v150Z`, 'fill dim'); R(g, x + 120, GROUND - 150, 420, 150, 'ink');
-  windows(g, x + 130, GROUND - 140, 400, 60, 8, 1);
-  R(g, x + 560, GROUND - 230, 200, 230, 'ink'); R(g, x + 780, GROUND - 120, 300, 120, 'ink');
-  // the advertising mast
-  const mx = x + 1180; L(g, mx, GROUND, mx, GROUND - 620, 'ink bold');
-  for (let i = 0; i < 7; i++) { const yy = GROUND - 180 - i * 62; P(g, `M${mx} ${yy}h${110 - i * 6}v${-28}h${-(110 - i * 6)}`, 'ink'); F(g, `M${mx + 2} ${yy - 1}h${106 - i * 6}v${-26}h${-(106 - i * 6)}Z`, i % 2 ? 'fill gold' : 'fill dim'); }
-  L(g, mx - 90, GROUND - 640, mx + 90, GROUND - 640, 'ink'); L(g, mx, GROUND - 620, mx, GROUND - 660, 'ink');
-  // string of bulbs
-  P(g, `M${x + 120} ${GROUND - 300}` + Array.from({ length: 10 }, () => 'q50 40 100 0').join(''), 'ink thin');
-  for (let i = 1; i < 10; i++) FC(g, x + 120 + i * 100, GROUND - 280, 6, 'fill gold');
-  T(g, x + 120, GROUND - 340, 'ACCEPTERA', 'lbl');
+/* 1922 — assembly train and the electric truck swapping its battery */
+(() => { const g = groups[2], x = SW * 2; order = 0; ground(g, x); year(g, x, 1922);
+  // catenary and poles
+  for (let i = 0; i < 5; i++) { const px = x + 160 + i * 300; L(g, px, GROUND, px, GROUND - 330, 'ink thin'); L(g, px, GROUND - 330, px + 60, GROUND - 330, 'ink thin'); }
+  P(g, `M${x + 220} ${GROUND - 330}` + Array.from({ length: 4 }, () => 'q150 18 300 0').join(''), 'ink gold');
+  L(g, x + 40, GROUND - 8, x + 1480, GROUND - 8, 'ink thin');
+  // locomotive + work car with a tower
+  P(g, `M${x + 260} ${GROUND - 20}v-110h60v-40h120v40h60v110Z`, 'ink'); for (let i = 0; i < 3; i++) C(g, x + 300 + i * 80, GROUND - 20, 18, 'ink thin');
+  P(g, `M${x + 530} ${GROUND - 20}v-90h260v90Z`, 'ink'); R(g, x + 600, GROUND - 300, 120, 190, 'ink thin'); P(g, `M${x + 610} ${GROUND - 300}l20 -24h60l20 24`, 'ink thin');
+  for (let i = 0; i < 2; i++) C(g, x + 580 + i * 160, GROUND - 20, 18, 'ink thin');
+  // electric truck, battery box sliding out under the bed
+  const tx = x + 1000;
+  P(g, `M${tx} ${GROUND - 40}v-150h110l50 -60h130v210Z`, 'ink bold'); R(g, tx + 120, GROUND - 240, 110, 60, 'ink thin');
+  C(g, tx + 60, GROUND - 40, 26, 'ink'); C(g, tx + 240, GROUND - 40, 26, 'ink');
+  R(g, tx + 120, GROUND - 130, 150, 50, 'ink gold'); P(g, `M${tx + 270} ${GROUND - 105}h90`, 'ink gold'); P(g, `M${tx + 350} ${GROUND - 115}l12 10l-12 10`, 'ink gold');
+  R(g, tx + 380, GROUND - 130, 150, 50, 'ink thin'); L(g, tx + 390, GROUND - 105, tx + 520, GROUND - 105, 'ink thin');
+  T(g, tx + 380, GROUND - 150, 'NYLADDAT BATTERI', 'lbl gold');
+  T(g, x + 700, GROUND - 360, 'VÄSTRA STAMBANAN · 16 000 VOLT', 'lbl');
 })();
 
-/* 1950 — Tunnelbanan: tunnel mouth, train, T-sign */
-(() => { const g = groups[3], x = SW * 3; order = 0; ground(g, x);
-  T(g, x + 120, 240, '1950', 'big');
-  // tunnel arch (section)
-  P(g, `M${x + 200} ${GROUND}v-260a300 300 0 0 1 600 0v260`, 'ink bold');
-  P(g, `M${x + 240} ${GROUND}v-240a260 260 0 0 1 520 0v240`, 'ink thin');
-  L(g, x + 200, GROUND - 80, x + 800, GROUND - 80, 'ink thin');                 // platform edge
-  // train
-  P(g, `M${x + 280} ${GROUND - 80}v-120q0 -30 30 -30h380q30 0 30 30v120Z`, 'ink');
-  windows(g, x + 300, GROUND - 215, 420, 70, 7, 1);
-  for (let i = 0; i < 4; i++) C(g, x + 334 + i * 110, GROUND - 66, 14, 'ink thin');
-  L(g, x + 200, GROUND - 320, x + 200, GROUND - 400, 'ink thin');
-  // T sign
-  FC(g, x + 1100, GROUND - 400, 100, 'fill gold');
-  C(g, x + 1100, GROUND - 400, 110, 'ink bold');
-  P(g, `M${x + 1040} ${GROUND - 450}h120m-60 0v110`, 'ink bold');
-  L(g, x + 1100, GROUND, x + 1100, GROUND - 290, 'ink');
-  T(g, x + 980, GROUND - 540, 'SLUSSEN – HÖKARÄNGEN', 'lbl');
+/* 1923 — the laboratory in a former kitchen, the fridge in the attic */
+(() => { const g = groups[3], x = SW * 3; order = 0; ground(g, x); year(g, x, 1923);
+  // section of the courtyard house: attic + ground floor kitchen
+  P(g, `M${x + 300} ${GROUND}v-260l260 -160l260 160v260`, 'ink'); L(g, x + 300, GROUND - 260, x + 820, GROUND - 260, 'ink thin');
+  // kitchen: stove converted to furnace, bench with glassware, a kettle on the wall
+  R(g, x + 340, GROUND - 130, 150, 130, 'ink'); R(g, x + 360, GROUND - 110, 110, 60, 'ink thin'); L(g, x + 415, GROUND - 130, x + 415, GROUND - 240, 'ink thin');
+  for (let i = 0; i < 4; i++) P(g, `M${x + 380 + i * 24} ${GROUND - 100}q6 -14 0 -28`, 'ink gold');   // heat
+  L(g, x + 540, GROUND - 90, x + 800, GROUND - 90, 'ink'); L(g, x + 560, GROUND - 90, x + 560, GROUND, 'ink thin'); L(g, x + 780, GROUND - 90, x + 780, GROUND, 'ink thin');
+  P(g, `M${x + 590} ${GROUND - 90}v-40l-14 -40h40l-14 40v40`, 'ink thin'); P(g, `M${x + 660} ${GROUND - 90}v-60a18 18 0 0 1 36 0v60`, 'ink thin'); P(g, `M${x + 730} ${GROUND - 90}v-30h30v30`, 'ink thin');
+  C(g, x + 740, GROUND - 180, 22, 'ink thin'); L(g, x + 740, GROUND - 180, x + 752, GROUND - 190, 'ink thin');   // clock
+  T(g, x + 340, GROUND - 275, 'F.D. KÖKET · ELEKTROVÄRMEINSTITUTET', 'lbl');
+  // attic: the Platen-Munters fridge, no moving parts
+  R(g, x + 500, GROUND - 390, 90, 120, 'ink'); L(g, x + 500, GROUND - 350, x + 590, GROUND - 350, 'ink thin'); R(g, x + 510, GROUND - 340, 70, 60, 'ink thin');
+  P(g, `M${x + 545} ${GROUND - 300}a16 16 0 1 1 .1 0`, 'ink gold');
+  T(g, x + 610, GROUND - 330, 'VINDEN · TEKNISKA MUSEET 1924', 'lbl');
+  // the figure: 500 reports
+  for (let i = 0; i < 10; i++) R(g, x + 1060 + (i % 5) * 80, GROUND - 60 - Math.floor(i / 5) * 90, 60, 80, 'ink thin');
+  T(g, x + 1060, GROUND - 230, '500 UTREDNINGAR 1923–1933', 'lbl gold');
 })();
 
-/* 1967 — Hötorgsskraporna, obelisk, Dagen H */
-(() => { const g = groups[4], x = SW * 4; order = 0; ground(g, x);
-  T(g, x + 120, 240, '1967', 'big');
-  for (let i = 0; i < 5; i++) { const bx = x + 180 + i * 150, h = 380 + (i % 2) * 20; R(g, bx, GROUND - h, 90, h, 'ink'); windows(g, bx, GROUND - h + 10, 90, h - 30, 3, 10, 'ink thin'); }
-  // obelisk
-  P(g, `M${x + 1060} ${GROUND}l16 -420l16 420Z`, 'ink'); for (let i = 1; i < 14; i++) L(g, x + 1062 + i * .9, GROUND - i * 30, x + 1090 - i * .9, GROUND - i * 30, 'ink thin');
-  // Dagen H: lanes switching
-  P(g, `M${x + 1180} ${GROUND - 20}h300`, 'ink thin'); P(g, `M${x + 1180} ${GROUND - 60}h300`, 'ink thin');
-  P(g, `M${x + 1200} ${GROUND - 60}q80 0 100 20t100 20`, 'ink gold'); P(g, `M${x + 1200} ${GROUND - 20}q80 0 100 -20t100 -20`, 'ink gold');
-  P(g, `M${x + 1400} ${GROUND - 20}l-14 -8m14 8l-14 8`, 'ink gold'); P(g, `M${x + 1400} ${GROUND - 60}l-14 -8m14 8l-14 8`, 'ink gold');
-  T(g, x + 1180, GROUND - 90, 'H · 3 SEPTEMBER 05:00', 'lbl');
+/* 1932 — the IVA stove, and the glass hall at Grand Hôtel behind */
+(() => { const g = groups[4], x = SW * 4; order = 0; ground(g, x); year(g, x, 1932);
+  // Vinterträdgården: glass roof vault with ribs
+  P(g, `M${x + 760} ${GROUND}v-280a340 200 0 0 1 680 0v280`, 'ink thin');
+  for (let i = 1; i < 8; i++) L(g, x + 760 + i * 85, GROUND, x + 760 + i * 85, GROUND - 280 - Math.sin(i / 8 * Math.PI) * 200, 'ink hatch');
+  for (let i = 1; i < 4; i++) P(g, `M${x + 760} ${GROUND - 280 + i * 60}a340 200 0 0 1 680 0`, 'ink hatch');
+  T(g, x + 1060, GROUND - 520, 'GRAND HÔTEL · VINTERTRÄDGÅRDEN', 'lbl');
+  // the stove, large
+  const sx = x + 220;
+  R(g, sx, GROUND - 240, 360, 240, 'ink bold'); L(g, sx, GROUND - 190, sx + 360, GROUND - 190, 'ink');
+  R(g, sx + 30, GROUND - 160, 120, 90, 'ink'); R(g, sx + 180, GROUND - 160, 150, 90, 'ink thin'); for (let i = 0; i < 5; i++) L(g, sx + 190, GROUND - 150 + i * 16, sx + 320, GROUND - 150 + i * 16, 'ink thin');
+  C(g, sx + 90, GROUND - 215, 22, 'ink'); C(g, sx + 250, GROUND - 215, 22, 'ink'); L(g, sx + 300, GROUND - 240, sx + 300, GROUND - 380, 'ink');
+  for (let i = 0; i < 3; i++) P(g, `M${sx + 60 + i * 30} ${GROUND - 125}q6 -12 0 -24`, 'ink gold');
+  T(g, sx + 100, GROUND - 60, 'IVA', 'lbl', { 'font-size': 36, 'letter-spacing': '.3em' });
+  T(g, sx, GROUND - 270, 'HALVERAD VEDÅTGÅNG · 270 KR', 'lbl gold');
+  // one log, not two
+  P(g, `M${sx + 420} ${GROUND - 40}l80 -30l10 20l-80 30Z`, 'ink thin');
 })();
 
-/* 1981 — Kaknästornet, a hand-held phone, waves over water */
-(() => { const g = groups[5], x = SW * 5; order = 0; ground(g, x);
-  T(g, x + 120, 240, '1981', 'big');
-  const kx = x + 640; P(g, `M${kx} ${GROUND}l12 -520h36l12 520Z`, 'ink'); R(g, kx - 30, GROUND - 440, 120, 60, 'ink'); R(g, kx - 20, GROUND - 400, 100, 30, 'ink thin');
-  L(g, kx + 30, GROUND - 520, kx + 30, GROUND - 640, 'ink thin');
-  for (let i = 1; i <= 4; i++) P(g, `M${kx + 30 + 40 * i} ${GROUND - 640 + 70 * i}a${40 * i} ${40 * i} 0 0 0 ${-80 * i} 0`, 'ink gold');
-  // the phone, large, foreground right
-  R(g, x + 1180, GROUND - 400, 110, 360, 'ink bold'); L(g, x + 1270, GROUND - 400, x + 1270, GROUND - 560, 'ink bold');
-  R(g, x + 1195, GROUND - 380, 80, 50, 'ink thin'); windows(g, x + 1190, GROUND - 310, 90, 220, 3, 5, 'ink thin');
-  T(g, x + 1180, GROUND - 590, 'NMT 450 · 760 g', 'lbl');
-  water(g, x + 820, GROUND - 160, 4);
+/* 1939 — the lectern, the atom, the medal */
+(() => { const g = groups[5], x = SW * 5; order = 0; ground(g, x); year(g, x, 1939);
+  // lectern and speaker
+  P(g, `M${x + 560} ${GROUND}v-200h120v200`, 'ink'); P(g, `M${x + 540} ${GROUND - 200}l10 -20h140l10 20`, 'ink');
+  C(g, x + 620, GROUND - 280, 26, 'ink'); P(g, `M${x + 580} ${GROUND - 220}q40 -40 80 0`, 'ink');
+  // the atom, drawn as he speaks of it
+  const ax = x + 1000, ay = GROUND - 330;
+  for (let a = 0; a < 3; a++) el('ellipse', { cx: ax, cy: ay, rx: 140, ry: 48, transform: `rotate(${a * 60} ${ax} ${ay})`, class: 'ink gold' }, g).dataset.o = order++;
+  FC(g, ax, ay, 9, 'fill gold'); FC(g, ax + 140, ay, 4, 'fill'); FC(g, ax - 70, ay - 42, 4, 'fill');
+  T(g, ax - 150, ay + 120, '"KANSKE OM TJUGU ÅR" · URANIUM SOM BRÄNSLE', 'lbl');
+  // the medal
+  C(g, x + 320, GROUND - 170, 70, 'ink bold'); C(g, x + 320, GROUND - 170, 56, 'ink thin'); FC(g, x + 320, GROUND - 170, 50, 'fill dim');
+  P(g, `M${x + 300} ${GROUND - 100}l-20 70h80l-20 -70`, 'ink thin');
+  T(g, x + 220, GROUND - 270, 'STORA GULDMEDALJEN', 'lbl gold');
 })();
 
-/* 2008 — Kista Science Tower, fiber lines */
-(() => { const g = groups[6], x = SW * 6; order = 0; ground(g, x);
-  T(g, x + 120, 240, '2008', 'big');
-  const tx = x + 700; P(g, `M${tx} ${GROUND}v-540q60 -40 120 0v540Z`, 'ink'); windows(g, tx + 8, GROUND - 520, 104, 500, 4, 16, 'ink thin');
-  skyline(g, x + 120, [[90, 120], [60, 200], [80, 160], [120, 240], [60, 180], [100, 260], [70, 150]]);
-  skyline(g, x + 900, [[90, 180], [120, 240], [60, 150], [140, 300], [80, 200], [120, 170]]);
-  // fiber: light running under the ground line
-  for (let i = 0; i < 5; i++) P(g, `M${x + 40} ${GROUND + 30 + i * 18}h${SW - 80}`, 'ink gold');
-  for (let i = 0; i < 12; i++) L(g, x + 160 + i * 110, GROUND, x + 160 + i * 110, GROUND - 40 - (i % 3) * 30, 'ink gold');
-  T(g, x + 1180, GROUND - 40, '10 GBIT/S · LJUS I GLAS', 'lbl');
+/* 1954 — the reactor in the rock under the research station */
+(() => { const g = groups[6], x = SW * 6; order = 0; year(g, x, 1954);
+  const gy = GROUND - 200;                                   // ground is higher: we see below it
+  L(g, x + 40, gy, x + 1480, gy, 'ink');
+  // the station above
+  R(g, x + 560, gy - 220, 520, 220, 'ink'); windows(g, x + 570, gy - 210, 500, 160, 10, 3); L(g, x + 560, gy - 220, x + 1080, gy - 220, 'ink thin');
+  T(g, x + 560, gy - 240, 'IVA:S FORSKNINGSSTATION · KTH 1944', 'lbl');
+  // rock, hatched, with the reactor hall cut out
+  hatch(g, x + 40, gy, 520, 230); hatch(g, x + 1080, gy, 400, 230);
+  P(g, `M${x + 560} ${gy}v190a40 40 0 0 0 40 40h440a40 40 0 0 0 40 -40v-190`, 'ink');
+  // reactor vessel
+  C(g, x + 820, gy + 125, 62, 'ink bold'); C(g, x + 820, gy + 125, 44, 'ink thin'); for (let i = 0; i < 5; i++) L(g, x + 790 + i * 15, gy + 80, x + 790 + i * 15, gy + 170, 'ink gold');
+  L(g, x + 820, gy, x + 820, gy + 63, 'ink thin');
+  T(g, x + 900, gy + 135, 'R1 · 1954', 'lbl gold');
+  T(g, x + 1110, gy + 60, '130 RIKSDAGSLEDAMÖTER PÅ BESÖK 1955', 'lbl');
 })();
 
-/* 2026 — painted scene fades in behind, drawing dissolves */
-(() => { const g = groups[7], x = SW * 7; order = 0;
+/* 1984 — the hall dug beneath the courtyard */
+(() => { const g = groups[7], x = SW * 7; order = 0; year(g, x, 1984);
+  const gy = GROUND - 200; L(g, x + 40, gy, x + 1480, gy, 'ink');
+  // the street house (section) and the courtyard
+  R(g, x + 300, gy - 300, 260, 300, 'ink'); windows(g, x + 300, gy - 290, 260, 230, 3, 4); L(g, x + 560, gy, x + 1100, gy, 'ink thin');
+  T(g, x + 300, gy - 320, 'GREV TUREGATAN · GATUHUSET', 'lbl'); T(g, x + 700, gy - 20, 'GÅRDEN', 'lbl');
+  // cellar vaults, then the hall under them
+  for (let i = 0; i < 3; i++) P(g, `M${x + 320 + i * 80} ${gy + 60}a40 40 0 0 1 80 0`, 'ink thin');
+  hatch(g, x + 40, gy, 260, 230); hatch(g, x + 1100, gy, 380, 230);
+  P(g, `M${x + 580} ${gy + 40}v170h500v-170`, 'ink bold'); L(g, x + 580, gy + 40, x + 1080, gy + 40, 'ink thin');
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 9; c++) P(g, `M${x + 610 + c * 50} ${gy + 110 + r * 32}h30`, 'ink thin');   // rows of seats
+  R(g, x + 600, gy + 60, 80, 30, 'ink thin');
+  T(g, x + 1110, gy + 120, 'WALLENBERGSALEN', 'lbl gold'); T(g, x + 1110, gy + 146, 'INVIGD 22 FEBRUARI 1984', 'lbl');
+  // the mission: a small aircraft heading west
+  P(g, `M${x + 1100} ${gy - 250}l200 -34l-50 34l50 34Z`, 'ink'); P(g, `M${x + 1180} ${gy - 264}l-70 -50m70 78l-70 50`, 'ink');
+  T(g, x + 1040, gy - 320, 'ROYAL TECHNOLOGY MISSION · KALIFORNIEN', 'lbl');
+})();
+
+/* 2026 — the painted scene fades in behind, the drawing dissolves */
+(() => { const g = groups[8], x = SW * 8; order = 0;
   stadshuset(g, x + 760, GROUND + 80, 1.0, { cls: 'ink thin' });
-  water(g, x + 100, GROUND + 100, 4);
 })();
 
 /* ------------------------------------------------------------------ prepare strokes */
-const items = [...svg.querySelectorAll('path,text')];
+const items = [...svg.querySelectorAll('path,text,ellipse')];
 for (const p of items) { if (p.dataset.fill) continue; const len = p.getTotalLength(); p.style.strokeDasharray = len; p.style.strokeDashoffset = len; p.dataset.len = len; }
 const perScene = groups.map(g => [...g.querySelectorAll('[data-o]')]);
 const maxO = perScene.map(a => Math.max(1, ...a.map(p => +p.dataset.o)));
 
-/* ------------------------------------------------------------------ timeline chrome */
+/* ------------------------------------------------------------------ the route */
 const tl = document.getElementById('tl');
 const yearPos = i => 4 + i * (92 / (SCENES.length - 1));
-SCENES.forEach((s, i) => { const t = el('i', {}); const m = document.createElement('i'); m.style.left = yearPos(i) + '%'; tl.appendChild(m); const b = document.createElement('b'); b.style.left = yearPos(i) + '%'; b.textContent = s.year; tl.appendChild(b); });
+SCENES.forEach((s, i) => {
+  const m = document.createElement('i'); m.style.left = yearPos(i) + '%'; tl.appendChild(m);
+  const b = document.createElement('b'); b.style.left = yearPos(i) + '%'; b.textContent = s.year; tl.appendChild(b);
+  if (i === 0 || s.venue !== SCENES[i - 1].venue) { const u = document.createElement('u'); u.style.left = yearPos(i) + '%'; u.textContent = s.venue; tl.appendChild(u); }
+});
 const dot = document.createElement('span'); dot.className = 'dot'; tl.appendChild(dot);
 
 /* ------------------------------------------------------------------ camera + state */
-const DWELL = 6.5, PAN = 2.6, HOLD_END = 9;              // seconds
-const SEG = DWELL + PAN, TOTAL = SEG * (SCENES.length - 1) + DWELL + HOLD_END;
+const INTRO = 4, DWELL = 8, PAN = 2.6, HOLD_END = 9;
+const SEG = DWELL + PAN, TOTAL = INTRO + SEG * (SCENES.length - 1) + DWELL + HOLD_END;
 const ease = t => t < 0 ? 0 : t > 1 ? 1 : t * t * (3 - 2 * t);
-function camAt(s) {                                      // scene index as a float
-  const k = Math.min(Math.floor(s / SEG), SCENES.length - 2), u = s - k * SEG;
-  return k + (u <= DWELL ? 0 : ease((u - DWELL) / PAN));
-}
-const cap = document.getElementById('cap'), capPlace = document.getElementById('capPlace'), capTitle = document.getElementById('capTitle'), capSeen = document.getElementById('capSeen');
-const frame = document.getElementById('frame'), texes = [...document.querySelectorAll('.tex[data-tex]')];
+function camAt(s) { s = Math.max(0, s - INTRO); const k = Math.min(Math.floor(s / SEG), SCENES.length - 2), u = s - k * SEG; return k + (u <= DWELL ? 0 : ease((u - DWELL) / PAN)); }
+const cap = document.getElementById('cap'), capPlace = document.getElementById('capPlace'), capTitle = document.getElementById('capTitle'), capSeen = document.getElementById('capSeen'), capUnseen = document.getElementById('capUnseen');
+const frame = document.getElementById('frame'), texes = [...document.querySelectorAll('.tex[data-tex]')], intro = document.getElementById('intro');
 const mark = document.getElementById('mark'), arc = document.getElementById('arc'), letters = document.getElementById('letters'), fin = document.getElementById('final'), shade = document.getElementById('shade');
 let curScene = -1;
 function setScene(i) {
-  if (i === curScene) return; curScene = i; const s = SCENES[i];
-  frame.style.setProperty('--bg', s.bg); frame.style.setProperty('--fg', s.fg); frame.style.setProperty('--accent', s.accent);
-  texes.forEach(t => t.style.opacity = s.tex.includes(t.dataset.tex) ? 1 : 0);
-  if (s.title) { capPlace.textContent = `${s.year} · ${s.place}`; capTitle.textContent = s.title; capSeen.textContent = s.seen; cap.classList.add('on'); } else cap.classList.remove('on');
-  shade.style.opacity = i === SCENES.length - 1 ? 1 : 0;
+  if (i === curScene) return; curScene = i; const s = SCENES[i], last = i === SCENES.length - 1;
+  texes.forEach(t => t.style.opacity = (t.dataset.tex === 'paint') === last ? 1 : 0);
+  if (s.title) { capPlace.textContent = `${s.year} · ${s.place}`; capTitle.textContent = s.title; capSeen.textContent = s.seen; capUnseen.textContent = s.unseen; } else cap.classList.remove('on');
+  shade.style.opacity = last ? 1 : 0;
 }
 
 let paused = false, t0 = performance.now(), offset = 0;
@@ -317,26 +379,23 @@ function tick(now) {
   const cam = camAt(s), camX = cam * SW;
   svg.setAttribute('viewBox', `${camX} 0 ${SW} 900`);
   setScene(Math.round(cam));
+  intro.style.opacity = s < INTRO - 1 ? 1 : 0; cap.classList.toggle('on', s >= INTRO - 0.6 && !!SCENES[Math.round(cam)].title);
   dot.style.left = (yearPos(0) + cam * (92 / (SCENES.length - 1))) + '%';
-
-  // draw-in per scene as the camera settles on it; fade out as it leaves
+  const si = s - INTRO;
   for (let i = 0; i < groups.length; i++) {
-    const d = cam - i;                                  // <0 approaching, 0 on it, >0 passed
-    const arrive = ease((d + 0.6) / 0.6);               // 0..1 while the camera arrives
-    const local = Math.max(0, Math.min(1, (s - i * SEG) / (DWELL * 0.75)));   // draw during dwell
-    const prog = i === 0 ? Math.min(1, s / (DWELL * 0.75)) : Math.min(arrive, local);
-    groups[i].style.opacity = i === SCENES.length - 1 ? 1 - ease((s - (SCENES.length - 1) * SEG - 2) / 3) : 1 - ease(d - 0.4);
+    const d = cam - i, arrive = ease((d + 0.6) / 0.6);
+    const local = Math.max(0, Math.min(1, (si - i * SEG) / (DWELL * 0.7)));
+    const prog = i === 0 ? Math.max(0, Math.min(1, (si + 1.5) / (DWELL * 0.7))) : Math.min(arrive, local);
+    groups[i].style.opacity = i === SCENES.length - 1 ? 1 - ease((si - (SCENES.length - 1) * SEG - 2) / 3) : 1 - ease(d - 0.4);
     for (const p of perScene[i]) {
       const o = +p.dataset.o / maxO[i], q = Math.max(0, Math.min(1, (prog - o * 0.8) / 0.25));
       if (p.dataset.fill) p.style.opacity = q * (p.classList.contains('dim') ? .12 : (p.classList.contains('big') ? .85 : 1));
       else p.style.strokeDashoffset = p.dataset.len * (1 - q);
     }
   }
-  // final scene choreography, measured from arrival
-  const fs = s - (SCENES.length - 1) * SEG + PAN;     // 0 at start of the final pan
-  const a = ease((fs - 2) / 3.2);                      // arc sweep
-  mark.style.opacity = fs > 1.5 ? 1 : 0;
-  arc.style.setProperty('--sw', `${a * 216}deg`);
+  const fs = si - (SCENES.length - 1) * SEG + PAN;
+  const a = ease((fs - 2) / 3.2);
+  mark.style.opacity = fs > 1.5 ? 1 : 0; arc.style.setProperty('--sw', `${a * 216}deg`);
   const l = ease((fs - 4.6) / 1.8);
   letters.style.opacity = l; letters.style.filter = `blur(${14 * (1 - l)}px)`; letters.style.transform = `translateY(${2.5 * (1 - l)}%)`;
   fin.style.opacity = ease((fs - 6.4) / 1.2);
@@ -348,7 +407,7 @@ addEventListener('keydown', e => {
   if (e.code === 'Space') { e.preventDefault(); paused = !paused; }
   if (e.code === 'ArrowRight' || e.code === 'ArrowLeft') { e.preventDefault();
     const s = (offset / 1000) % TOTAL, k = Math.round(camAt(s)) + (e.code === 'ArrowRight' ? 1 : -1);
-    const target = Math.max(0, Math.min(SCENES.length - 1, k)) * SEG; t0 = performance.now() - target * 1000; offset = target * 1000; }
+    const target = INTRO + Math.max(0, Math.min(SCENES.length - 1, k)) * SEG; t0 = performance.now() - target * 1000; offset = target * 1000; }
 });
 frame.addEventListener('click', () => { const p = document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.(); p && p.catch(() => {}); });
 })();
